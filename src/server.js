@@ -57,14 +57,11 @@ app.post("/api/articles/:name/add-comment", (req, res) => {
         const articleName = req.params.name;
         const articlesInfo = await db.collection("articles").findOne({ name: articleName });
 
-        const commentsArr = articlesInfo.comments;
-        commentsArr.push({ userName, text });
-
         await db.collection("articles").updateOne(
             { name: articleName },
             {
                 $set: {
-                    comments: commentsArr,
+                    comments: articlesInfo.comments.concat({ userName, text }),
                 },
             }
         );
