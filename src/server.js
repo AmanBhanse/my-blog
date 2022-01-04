@@ -5,7 +5,7 @@ import { MongoClient } from "mongodb"; //Tool to connect to our local database
 const MONGO_DB_URL = "mongodb://127.0.0.1:27017";
 const MONGO_DB_NAME = "my-blog-db";
 const COLLECTION_NAME = "articles";
-
+const PORT = 8000;
 const app = express();
 
 app.use(bodyParser.json());
@@ -37,8 +37,8 @@ app.get("/api/articles/:name", async (req, res) => {
 app.post("/api/articles/:name/upvote", async (req, res) => {
     await withDB(async (db) => {
         const articleName = req.params.name;
-        const articlesInfo = await db.collection("articles").findOne({ name: articleName });
-        await db.collection("articles").updateOne(
+        const articlesInfo = await db.collection(COLLECTION_NAME).findOne({ name: articleName });
+        await db.collection(COLLECTION_NAME).updateOne(
             { name: articleName },
             {
                 $set: {
@@ -46,7 +46,9 @@ app.post("/api/articles/:name/upvote", async (req, res) => {
                 },
             }
         );
-        const updatedArticlesInfo = await db.collection("articles").findOne({ name: articleName });
+        const updatedArticlesInfo = await db
+            .collection(COLLECTION_NAME)
+            .findOne({ name: articleName });
         res.status(200).json(updatedArticlesInfo);
     }, res);
 });
@@ -55,9 +57,9 @@ app.post("/api/articles/:name/add-comment", (req, res) => {
     withDB(async (db) => {
         const { userName, text } = req.body;
         const articleName = req.params.name;
-        const articlesInfo = await db.collection("articles").findOne({ name: articleName });
+        const articlesInfo = await db.collection(COLLECTION_NAME).findOne({ name: articleName });
 
-        await db.collection("articles").updateOne(
+        await db.collection(COLLECTION_NAME).updateOne(
             { name: articleName },
             {
                 $set: {
@@ -65,9 +67,11 @@ app.post("/api/articles/:name/add-comment", (req, res) => {
                 },
             }
         );
-        const updatedArticlesInfo = await db.collection("articles").findOne({ name: articleName });
+        const updatedArticlesInfo = await db
+            .collection(COLLECTION_NAME)
+            .findOne({ name: articleName });
         res.status(200).json(updatedArticlesInfo);
     }, res);
 });
 
-app.listen(8000, () => console.log("Listening on port 8000"));
+app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
