@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import { MongoClient } from "mongodb"; //Tool to connect to our local database
+import path from "path";
 
 const MONGO_DB_URL = "mongodb://127.0.0.1:27017";
 const MONGO_DB_NAME = "my-blog-db";
@@ -8,6 +9,7 @@ const COLLECTION_NAME = "articles";
 const PORT = 8000;
 const app = express();
 
+app.use(express.static(path.join(__dirname, "/build")));
 app.use(bodyParser.json());
 
 const withDB = async (operations, res) => {
@@ -72,6 +74,14 @@ app.post("/api/articles/:name/add-comment", (req, res) => {
             .findOne({ name: articleName });
         res.status(200).json(updatedArticlesInfo);
     }, res);
+});
+
+/*Below code means that all the request which aren't match to our other API routers 
+should be passed on to our app and this will allow our client side app to navigate 
+pages and process URL correctly
+*/
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname + "/build/index.html"));
 });
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
